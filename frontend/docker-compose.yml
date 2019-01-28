@@ -1,0 +1,15 @@
+version: "3"
+services:
+  web:
+    build: ./
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./src/:/karaoke-app/src
+    networks:
+      - karaoke-network
+
+networks:
+  karaoke-network:
+    external:
+      name: karaoke_network

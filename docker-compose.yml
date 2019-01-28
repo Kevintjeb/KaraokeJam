@@ -1,0 +1,90 @@
+version: "3"
+services:
+  reverse-proxy:
+    image: traefik # The official Traefik docker image
+    command: --api --docker # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      - "80:80"
+      - "443:443" # The HTTP port
+      - "8084:8080" # The Web UI (enabled by --api)
+    volumes:
+      - ./traefik.toml:/traefik.toml
+      - ./acme.json:/acme.json
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+
+  web:
+    build:
+      context: ./frontend/
+      dockerfile: ./deployment/Dockerfile
+    environment:
+      - NGINX_PORT=80
+    labels:
+      - traefik.port=80
+      - traefik.frontend.rule=Host:www.karaokejam.${TLD}
+      - traefik.frontend.entryPoints=${entrypoints}
+
+  rooms:
+    build:
+      context: ./backend/rooms
+      args:
+        - gitlab_token=${gitlab_token}
+    labels:
+      - traefik.port=8081
+      - traefik.rooms.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/rooms
+      - traefik.frontend.entryPoints=${entrypoints}
+  queue:
+    build:
+      context: ./backend/queue
+      args:
+        - gitlab_token=${gitlab_token}
+    labels:
+      - traefik.port=8082
+      - traefik.queue.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/songs
+      - traefik.frontend.entryPoints=${entrypoints}
+
+  coordinator:
+    build:
+      context: ./backend/coordinator
+      args:
+        - gitlab_token=${gitlab_token}
+    labels:
+      - traefik.port=8080
+      - traefik.search.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/coordinator
+      - traefik.frontend.entryPoints=${entrypoints}
+
+  search:
+    build:
+      context: ./backend/search
+      args:
+        - gitlab_token=${gitlab_token}
+    labels:
+      - traefik.port=8083
+      - traefik.search.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/search
+      - traefik.frontend.entryPoints=${entrypoints}
+
+  rabbitmq:
+    image: rabbitmq:3-management
+
+  redis:
+    image: redis:5.0.1-alpine
+    command: ["redis-server"]
+    hostname: redis
+    volumes:
+      - ./backend/data/redis:/data
+
+  mongodb:
+    image: mongo:latest
+    hostname: mongodb
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_sDIR=/dev/null
+      - MONGODB_USER="admin"
+      - MONGODB_PASS="Welkom01"
+    volumes:
+      - ./backend/data/mongo:/data/db
+    command: mongod --smallfiles --logpath=/dev/null
+
+networks:
+  default:
+    external:
+      name: karaoke_network

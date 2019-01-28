@@ -1,0 +1,20 @@
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+[acme]
+email = "karaokejam@kevinvandenbroek.nl"
+storage = "acme.json"
+entryPoint = "https"
+acmeLogging=true 
+onDemand = false
+  [acme.httpChallenge]
+  entryPoint = "http"
+
+[[acme.domains]]
+  main = "www.karaokejam.online"

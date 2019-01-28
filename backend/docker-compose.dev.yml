@@ -1,0 +1,33 @@
+version: '3'
+services:
+  rooms:
+    volumes:
+      - ./rooms:/backend/rooms
+    ports:
+      - 8081:8081
+
+  queue:
+    volumes:
+      - ./queue:/backend/queue
+    ports:
+      - 8082:8082
+
+  coordinator:
+    volumes:
+      - ./coordinator:/backend/coordinator
+
+  search:
+    volumes:
+      - ./search:/backend/search
+
+  rabbitmq:
+    ports:
+      - 8090:15672
+
+  redis:
+    ports:
+      - 6379:6379
+
+  mongodb:
+    ports:
+      - 27017:27017

@@ -1,0 +1,69 @@
+networks:
+  default:
+    external:
+      name: karaoke_network
+services:
+  coordinator:
+    image: kevintjeb/ws18-karaoke_coordinator:1548181210
+    labels:
+      - traefik.port=8080
+      - traefik.search.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/coordinator
+      - traefik.frontend.entryPoints=${entrypoints}
+  mongodb:
+    command: mongod --smallfiles --logpath=/dev/null
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_sDIR=/dev/null
+      - MONGODB_USER="admin"
+      - MONGODB_PASS="Welkom01"
+    hostname: mongodb
+    image: mongo:latest
+    volumes:
+      - ./backend/data/mongo:/data/db
+  queue:
+    image: kevintjeb/ws18-karaoke_queue:1548181210
+    labels:
+      - traefik.port=8082
+      - traefik.queue.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/songs
+      - traefik.frontend.entryPoints=${entrypoints}
+  rabbitmq:
+    image: rabbitmq:3-management
+  redis:
+    command:
+      - redis-server
+    hostname: redis
+    image: redis:5.0.1-alpine
+    volumes:
+      - ./backend/data/redis:/data
+  reverse-proxy:
+    command: --api --docker
+    image: traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8084:8080
+    volumes:
+      - ./traefik.toml:/traefik.toml
+      - ./acme.json:/acme.json
+      - /var/run/docker.sock:/var/run/docker.sock
+  rooms:
+    image: kevintjeb/ws18-karaoke_rooms:1548181210
+    labels:
+      - traefik.port=8081
+      - traefik.rooms.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/rooms
+      - traefik.frontend.entryPoints=${entrypoints}
+  search:
+    image: kevintjeb/ws18-karaoke_search:1548181210
+    labels:
+      - traefik.port=8083
+      - traefik.search.frontend.rule=Host:www.karaokejam.${TLD};PathPrefix:/search
+      - traefik.frontend.entryPoints=${entrypoints}
+  web:
+    environment:
+      - NGINX_PORT=80
+    image: kevintjeb/ws18-karaoke_web:1548181210
+    labels:
+      - traefik.port=80
+      - traefik.frontend.rule=Host:www.karaokejam.${TLD}
+      - traefik.frontend.entryPoints=${entrypoints}
+version: "3"
