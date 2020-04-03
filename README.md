@@ -108,7 +108,7 @@ $ ./deploy.sh
 
 ## Built With
 
-- [Vuejs](hhttps://vuejs.org/ - The web framework used
+- [Vuejs](https://vuejs.org/) - The web framework used
 - [Docker](https://www.docker.com/) - Container software
   - [Docker-compose](https://docs.docker.com/compose/) - Container Management
 - [Traefik](https://traefik.io/) - Load balancer + service discovery
