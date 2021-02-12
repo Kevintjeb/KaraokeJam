@@ -14,7 +14,7 @@
   "author": "Kevin van den Broek, Martijn de Voogd",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.1.2",
+    "@babel/core": "^7.4.5",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
     "@vue/cli-plugin-babel": "^3.0.0-rc.10",
